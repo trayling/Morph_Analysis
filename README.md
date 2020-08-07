@@ -1,4 +1,5 @@
-# Network_Beam_Cell_Analysis
+# Morph_Analysis: Network_Fiber_Nucleus_Analysis
+
 This code was originally developed to analyze astrocyte GFAP, actin and nucleus but can be generalized to conduct general fiber network and cell nuclei analysis.
 This folder contains code and images for measuring network features such as fiber coverage, fiber width, fiber length, fiber tortuosity, fiber  orientation anisotropy , aspect ratio of nucleus, etc. It also has an auto boundary detection function for segmentation of region of interest(ROI). 
 
