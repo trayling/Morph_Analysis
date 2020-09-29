@@ -84,9 +84,9 @@ end
     %calculate average beam width in each zone
     width_mask=distskel.*maskI;
     width_mask(width_mask==0)=nan;
-    Avgwid=nanmean(distskel,'all'); 
-    Stdwid=nanstd(distskel,0,'all'); 
-    Maxwid=max(distskel,[],'all');
+    Avgwid=nanmean(width_mask,'all'); 
+    Stdwid=nanstd(width_mask,0,'all'); 
+    Maxwid=max(width_mask,[],'all');
     
 %     %% calculate average beam width by fitting gaussian distribution %%%
 %     [muall,sigall]=fitgaus(distskel, Maxwid);

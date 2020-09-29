@@ -13,7 +13,7 @@ close all
 % define resolution of the image
 res=0.1038;         %um/pixel
 % display figures?
-showfig=0;          % 1= yes 0= no
+showfig=1;          % 1= yes 0= no
 
 % state file name and image size for saving
 dataname='Ex1_results';

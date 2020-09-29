@@ -1,4 +1,4 @@
-function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasLength(skelI,bini,showfig)
+function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasLength(SkelI,bini,showfig)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     This function MeasLength measures contour length, straigh line
@@ -32,19 +32,19 @@ function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasL
 % and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    [beamNodeI,beamI]=MergeNodes(SkelI,bini);
+    [~,beamI]=MergeNodes(SkelI,bini);
     branch_lb=bwlabel(beamI);
     branch_lb1=branch_lb;
     no_branch=max(max(branch_lb)); % number of identified branches
     %pre-allocate output variables
     branch_distance=NaN(no_branch,1);
-    blstats = regionprops(SkelI,'Perimeter','Orientation');
+    blstats = regionprops(beamI,'Perimeter','Orientation');
        % record pixel distance
        for l=1:no_branch
            [posy,posx]=find(branch_lb==l);
            len=size(posx,1);
 
-           pos=sub2ind(size(Skel2),posy,posx);
+           pos=sub2ind(size(beamI),posy,posx);
 
            % calculate straight line distance
            branch_dist=pdist2([posy(1),posx(1)],[posy(len),posx(len)]);
@@ -60,7 +60,7 @@ function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasL
            caxis([0 max(distskel,[],'all')])
        end
        
-       branch_pixel=blstats.Perimeter/2;
+       branch_pixel=[blstats.Perimeter]/2;
        % calculate tortuosity/waviness of each beam
        branch_turtuosity=branch_pixel./branch_dist;
        %record mean and std
