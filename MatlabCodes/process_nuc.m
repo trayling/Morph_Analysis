@@ -1,4 +1,4 @@
-function [noutline,nuclayer,nuc1_calc,nucstat]=process_nuc(nucI,maskI,showfig,res,options,color)
+function [noutline,nuclayer,histnuc,nuc1_calc,nucstat]=process_nuc(nucI,maskI,showfig,res,options,color)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  This function process_nuc processes images stained for cell nucleus. It
@@ -20,8 +20,7 @@ function [noutline,nuclayer,nuc1_calc,nucstat]=process_nuc(nucI,maskI,showfig,re
 %   options:        Stuct with input options:
 %       .Lwin:      Large window size for more global contrast enhancement,
 %                   base on size of area of interest
-%       .Swin:      Small window size for local contrast enhancement, base
-%                   on the size of subarea to that are uneven in intensity
+%       .snuc:      size of diamond structure for morphological opening
 %       .threshpix: Threshold for bwareaopen, remove area under this number
 %                   of pixels
 % outputs,
@@ -29,6 +28,8 @@ function [noutline,nuclayer,nuc1_calc,nucstat]=process_nuc(nucI,maskI,showfig,re
 %                   median filtered image
 %    nuclayer:      2D Binarized nuclear image for removal of negative
 %                   space from thin network Image
+%    histnuc:       Final 2D greyscale image just before
+%                   binarization, used for visualization
 %    nuc1_calc:     Final 2D Binarized image after smoothing and bwareaopen 
 %                   for calculation of nuclear properties
 %    nucstat:       struct with measured nuclear properties
@@ -49,12 +50,14 @@ function [noutline,nuclayer,nuc1_calc,nucstat]=process_nuc(nucI,maskI,showfig,re
 %   options = struct('Lwin',500 , 'snuc',5,'threshpix',300);
 %   [noutline,nuclayer,nuc1_calc,nucstat]=process_nuc(I,samplemask,1,1,options,'b');
 %   figure, imshow(noutline);
-%
-% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   or refer to Ex1_ImAnalysis.m
 
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 defaultoptions = struct('Lwin',500 , 'snuc',4,'threshpix',300);
 
 if (~exist('options','var')) 
@@ -70,7 +73,8 @@ else
         error('process_nuc: unknown option','unknown options found');
     end
 end
-%%%%%%%%%%%%%%%%%%% median filter %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+    %%%%%%%%%%%%%%%%%%% median filter %%%%%%%%%%%%%%%%%%%%%%%%%%
     medfiltnuc=medfilt2(nucI);
     %%%%%%%%%%%%%%% contrast enhancement %%%%%%%%%%%%%%%%%%%%%
     histnuc=adapthisteq(medfiltnuc,'NumTiles',[options.Lwin/2 options.Lwin/2]);
@@ -94,7 +98,7 @@ end
     nuc1_calc=bwareaopen(nuclayer,options.threshpix); 
     bound=bwmorph(nuc1_calc,'remove');
 
-    clear histnuc nucB1 
+    clear nucB1 
 
     medfilter1=medfiltnuc;
     medfilter1(bound==1)=255;
@@ -114,10 +118,10 @@ end
         labelrgb = label2rgb(NUClabel, 'jet', 'w', 'shuffle');
         figure
         imshow(labelrgb)
-        msgfig = msgbox('nuclear channel','Step3','modal');
-        uiwait(msgfig)
-        disp('Continue Image processing.');
-        close all
+%         msgfig = msgbox('nuclear channel','Step3','modal');
+%         uiwait(msgfig)
+%         disp('Continue Image processing.');
+%         close all
     end
     
     clear medfiltered1 medfiltered2 bound medfilternuc

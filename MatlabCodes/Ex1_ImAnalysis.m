@@ -3,19 +3,18 @@ function combinedata=Ex1_ImAnalysis(options_thick,options_thin,options_nuc,optio
 %  This function ImAnalysis processes images with 3 channels consecutively 
 %  binarizes grey scale images, smooths them and calculates network properties
 % 
-% combinedata=ImAnalysis(options_thick,options_thin,options_nuc,options_pore,colorthick,colorthin,colornuc,res,savesize,showfig);
+% combinedata=Ex1_ImAnalysis(options_thick,options_thin,options_nuc,options_pore,colorthick,colorthin,colornuc,res,savesize,showfig);
 % 
 % inputs,
 %       refer to Ex1_main_ImAnalysis.m
 % outputs,
 %    combinedata: measured data from all 3 channels for all image
 %    slices
-%
-% or refer to Ex1_ImAnalysis.m
 
 % Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % clear all 
 % close all
@@ -24,28 +23,29 @@ warning('off','all')
 % get current matlab code folder name
 codefolderloc = pwd;
 
-% make new folder
-mkdir ../Ex1_OutputPics thickbound
-mkdir ../Ex1_OutputPics thickden
-mkdir ../Ex1_OutputPics thinden
-mkdir ../Ex1_OutputPics Nuclden
-
 % get name of the current directory (main folder)
-strloc=strfind(codefolderloc, '/MatlabCodes');
-folderloc = codefolderloc(1:strloc);
+strloc=strfind(codefolderloc, 'MatlabCodes');
+folderloc = codefolderloc(1:strloc-1);
+
+% define filenames for new folders
+namd_thickIbound=fullfile(folderloc,'Ex1_OutputPics','thickbound');
+namd_thickIden=fullfile(folderloc,'Ex1_OutputPics','thickden');
+namd_thinden=fullfile(folderloc,'Ex1_OutputPics','thinden');
+namd_nucden=fullfile(folderloc,'Ex1_OutputPics','Nuclden');
+
+% make new folder
+mkdir(namd_thickIbound);
+mkdir(namd_thickIden);
+mkdir(namd_thinden);
+mkdir(namd_nucden);
 
 % folder where each section is split into 3 channels Red = actin, Green =
 % GFAP, cell = Nucleus
-splitfolder = strcat(folderloc,'Ex1_Inputsplit/');
-d = dir([splitfolder, '*.tif']);
+splitfolder = fullfile(folderloc,'Ex1_InputSplit3channel');
+d = dir(fullfile(splitfolder, '*.tif'));
 numfile=size(d,1);
 stacks=numfile/3;
 
-% define filenames for new folders
-namd_thickIbound=strcat(folderloc,'Ex1_OutputPics/thickbound/');
-namd_thickIden=strcat(folderloc,'Ex1_OutputPics/thickden/');
-namd_thinden=strcat(folderloc,'Ex1_OutputPics/thinden/');
-namd_nucden=strcat(folderloc,'Ex1_OutputPics/Nuclden/');
 
 % preallocate space for measured features
 slidenum=NaN(stacks,1);                         % slide number
@@ -110,9 +110,9 @@ for i=1:stacks
     nucidx=(i-1)*3+2;
     thinidx=(i-1)*3+3;
     %read image
-    ThickIm=imread([splitfolder d(thickidx).name]); 
-    NuclIm=imread([splitfolder d(nucidx).name]);
-    ThinIm=imread([splitfolder d(thinidx).name]);
+    ThickIm=imread(fullfile(splitfolder, d(thickidx).name)); 
+    NuclIm=imread(fullfile(splitfolder, d(nucidx).name));
+    ThinIm=imread(fullfile(splitfolder, d(thinidx).name));
     
     filename = getfield(d(thickidx),'name');
     idx=strfind(filename,'slide');
@@ -136,18 +136,18 @@ for i=1:stacks
     
     %% processing thick network channel first
     % ROI mask will be determined from GFAP channel as well
-    [thickImask1,thickIden,outline,thickstat]=process_thick(ThickIm,showfig,res,options_thick,colorthick);
+    [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(ThickIm,showfig,res,options_thick,colorthick);
     ThickStat(i)=thickstat;
     
     %% process thin network channel 
-    [thinoutline,thin1,thinstat]=process_thin(ThinIm,thickImask1,showfig,res,options_thin,colorthin);
+    [thinoutline,thin1,histthin,thinstat]=process_thin(ThinIm,thickImask1,showfig,res,options_thin,colorthin);
     ThinStat(i)=thinstat;
     %% combine thick and thin network channel
     combinethinthick=thin1 | thickIden;
     CombineAREA(i,1)=sum(sum(combinethinthick));
     Combineden(i,1)=sum(sum(combinethinthick))/thickstat.mask_area;
     %%  process Nucleus channel
-    [nucoutline,nuclayer,nuc1_calc,nucstat]=process_nuc(NuclIm,thickImask1,showfig,res,options_nuc,colornuc);
+    [nucoutline,nuclayer,histnuc,~,nucstat]=process_nuc(NuclIm,thickImask1,showfig,res,options_nuc,colornuc);
     NucStat(i)=nucstat;    
     %% process pores from negative thin network and negative nuclear channel
     [pstat]=process_pore(thickImask1,thin1,nuclayer,showfig,options_pore); 
@@ -156,20 +156,23 @@ for i=1:stacks
     %% save images
     % image outlining the boundary of ROI on thick network channel
     thickIden = imresize(thickIden,[savesize savesize]);
-    imwrite(thickIden, [namd_thickIden savefname num2str(i) '.tif']);
+    imwrite(thickIden, fullfile(namd_thickIden,[savefname num2str(i) '.tif']));
     
     % image from thick network channel
     outline = imresize(outline,[savesize savesize]);
-    imwrite(outline, [namd_thickIbound savefname num2str(i) '.tif']);
+    imwrite(outline, fullfile(namd_thickIbound, [savefname num2str(i) '.tif']));
     
     % images from thin network channel
     thinoutline = imresize(thinoutline,[savesize savesize]);
-    imwrite(thinoutline, [namd_thinden savefname num2str(i) '.tif']);
+    imwrite(thinoutline, fullfile(namd_thinden, [savefname num2str(i) '.tif']));
     
     % image from nuclear channel
     nucoutline = imresize(nucoutline,[savesize savesize]);
-    imwrite(nucoutline, [namd_nucden savefname num2str(i) '.tif']);
+    imwrite(nucoutline, fullfile(namd_nucden, [savefname num2str(i) '.tif']));
+    
 
+    showrgb(histthin,histthickI,histnuc,showfig);
+    
 end
 
 %% combine data

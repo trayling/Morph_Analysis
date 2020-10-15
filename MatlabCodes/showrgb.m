@@ -1,4 +1,5 @@
 function rgbI=showrgb(r,g,b,show)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  This function showrgb displays a coloured image by combining 3 greyscale
 %  images representing the red, green and blue channels
 % 
@@ -19,6 +20,11 @@ function rgbI=showrgb(r,g,b,show)
 %   b=adapthisteq(imread('sampleblue.tif'));
 %   rgbI=showrgb(r,g,b,1);
 % Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 if nargin < 4
   show = 1;
 end

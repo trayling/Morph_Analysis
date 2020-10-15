@@ -1,4 +1,4 @@
-function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,res,options,color)
+function [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(thickI,showfig,res,options,color)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  This function process_thick processes images with fine network. It
 %  binarizes grey scale images, smooths them and calculates network properties
@@ -24,14 +24,23 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
 %   options:        Stuct with input options:
 %       .Lwin:      Large window size for more global contrast enhancement
 %       .Swin:      Small window size for local contrast enhancement
-%       .sthin:     radius of disk to be used for morphological opening
-%                    % used for merging nodes that may be too close after
-                    % skeletonization
+%       .threshpix: radius of disk to be used for morphological closing for
+%                   autoboundary detection of the area of interest, set to
+%                   0 if not needed
+%       .sthick:    radius of disk to be used for morphological opening of
+%                   the branches, , set to 0 if not needed
+%       .skelthr:   threshold for removing spurious small branches, larger number
+%                   remove longer branch that are sticking out from the main
+%                   branch, , set to 0 if not needed
+%       .bini:      intial average beam width in pixels to merge nodes that are
+%                   closed to each other for skeletonization
 % outputs,
 %    outline:      2D image with final identified network outlined on the
 %                   median filtered image
-%    thickIden:         Final 2D Binarized image after smoothing  
+%    thickIden:     Final 2D Binarized image after smoothing  
 %                   for calculation of thin network properties
+%    histthickI:       Final 2D greyscale image just before
+%                   binarization, used for visualization
 %    thickstat:     struct with measured properties 
 %     .mask_area                         % total area of ROI (pixels^2)
 %     .mask_AREA_um                      % total area of ROI (um^2)   
@@ -60,15 +69,15 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
 % example, 
 %   I=imread('samplegreen.tif'); % can be greyscale image
 %   options = struct('Lwin',500 , 'Swin', 30, 'threshpix', 300, 'sthick', 3, 'skelthr', 20, 'bini',8);
-%   [thickImask1,thickIden,outline,thickstat]=process_thick(I,1,1,options,'g')
+%   [thickImask1,thickIden,outline,thickstat]=process_thick(I,1,1,options,'g');
 %   figure, imshow(outline);
-%
+%   or refer to Ex1_ImAnalysis.m
+
 % Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
     defaultoptions = struct('Lwin',500 , 'Swin', 30, 'threshpix', 300, 'sthick', 3, 'skelthr', 20, 'bini',8);
 
@@ -106,12 +115,12 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
     %%%%%%%%%%%%%%%%% auto detect boundary & %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%% seperate central pheroheral and rim zone %%%%%%%%%%%%%%%%%%%%
     [thickImask1,outline,thickIcen,thickIperi,thickIperi90,thickIrim,mask_area,mask_ar,mcen_area,mperi_area,mperi90_area,mrim_area]=AutoBoundary(histthickI,B1,options.threshpix,showfig);
-    if showfig ==1
-        msgfig = msgbox('Auto Boundary detection and regional mask generation','Step2','modal');
-        uiwait(msgfig)
-        disp('Continue Image processing.');
-        close all
-    end
+% %     if showfig ==1
+% %         msgfig = msgbox('Auto Boundary detection and regional mask generation','Step2','modal');
+% %         uiwait(msgfig)
+% %         disp('Continue Image processing.');
+% %         close all
+% %     end
     
     %%%%%%%%%%% morphological smoothing %%%%%%%%%%%%%%%%%%%%
     B1=thickImask1.*B1;
@@ -147,7 +156,7 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
     end
     
     
-    clear B1 medfilterthickI1 medfilterthickI2 bound medfilterthickI medfilterthickI1 medfilterthickI2 bound histthickI
+    clear B1 medfilterthickI1 medfilterthickI2 bound medfilterthickI medfilterthickI1 medfilterthickI2 bound
    
     %%%%%%%%%%%%%%%%%%%%%% skeletonization %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -157,7 +166,7 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
     Skel2=bwmorph(Skel2,'clean');
     
     % Identify nodes from beam network and merge nodes that are close together   
-    [beamNodeI,beamI]=MergeNodes(Skel2,options.bini);
+    [beamNodeI,beamI,beamlabel]=MergeNodes(Skel2,options.bini);
     
     % beamI can be used to measure beam width, length, tortuosity etc
     %%%%%%%%%%%%%%%%%%%%%% calculate beam width %%%%%%%%%%%%%%%%%%%%%%
@@ -166,10 +175,10 @@ function [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,
     %all
     [bwidth,bwistd,bwimax]=MeasWidthAll(beamI,lastBW,res,lastBW,dilsize,showfig);
     %zones
-    [bwicen,bwicenstd,bwicenmax]=MeasWidthAll(beamI,lastBW,res,thickIcen,dilsize,showfig);
-    [bwiperi,bwiperistd,bwiperimax]=MeasWidthAll(beamI,lastBW,res,thickIperi,dilsize,showfig);
-    [bwiperi90,bwiperi90std,bwiperi90max]=MeasWidthAll(beamI,lastBW,res,thickIperi90,dilsize,showfig);
-    [bwirim,bwirimstd,bwirimmax]=MeasWidthAll(beamI,lastBW,res,thickIrim,dilsize,showfig);
+    [bwicen,bwicenstd,~]=MeasWidthAll(beamI,lastBW,res,thickIcen,dilsize,showfig);
+    [bwiperi,bwiperistd,~]=MeasWidthAll(beamI,lastBW,res,thickIperi,dilsize,showfig);
+    [bwiperi90,bwiperi90std,~]=MeasWidthAll(beamI,lastBW,res,thickIperi90,dilsize,showfig);
+    [bwirim,bwirimstd,~]=MeasWidthAll(beamI,lastBW,res,thickIrim,dilsize,showfig);
     % % % %% optional: calculate average beam width by fitting gaussian distribution %%%
     % % % [muall,sigall]=fitgaus(distskel, Maxwid); % output distskel from
     % % % function MeasWidth

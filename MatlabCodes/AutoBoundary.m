@@ -38,9 +38,10 @@ function [mask1,foutline,mcen,mperi,mperi90,mrim,marea,mAR,mcen_area,mperi_area,
 %   figure, imshow(foutline);
 %   or refer to Ex1_ImAnalysis for better quality
 %
-%   Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     Z1 = bwmorph(B1,'majority');
     fill= imfill(Z1,'holes');

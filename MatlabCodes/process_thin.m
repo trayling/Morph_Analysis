@@ -1,4 +1,4 @@
-function [thinIden,thin1,thinstat]=process_thin(thinI,maskI,showfig,res,options,color)
+function [thinIden,thin1,hisadapt,thinstat]=process_thin(thinI,maskI,showfig,res,options,color)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  This function process_thin processes images with fine network. It
 %  binarizes grey scale images, smooths them and calculates network properties
@@ -24,9 +24,11 @@ function [thinIden,thin1,thinstat]=process_thin(thinI,maskI,showfig,res,options,
 %                   overlly smoothed
 % outputs,
 %    thinIden:      2D image with final identified network outlined on the
-%                   median filtered image
+%                   median filtered image, used for visualization
 %    thin1:         Final 2D Binarized image after smoothing  
 %                   for calculation of thin network properties
+%    histadapt:     Final 2D greyscale image just before
+%                   binarization, used for visualization
 %    thinstat:        struct with measured properties
 %     .thinarea       % total area of thin network in ROI (pixels^2)
 %     .thinarea_um    % total area of thin network in ROI (um^2)
@@ -38,13 +40,14 @@ function [thinIden,thin1,thinstat]=process_thin(thinI,maskI,showfig,res,options,
 %   I=imread('samplered.tif');       %  import greyscale image
 %   load('samplemask.mat');  % import  ROI mask
 %   options_thin = struct('Lwin',500 , 'Swin', 30, 'sthin',0);
-%   [thinIden,thin1,thinstat]=process_thin(I,samplemask,1,1,options_thin,'r');
+%   [thinIden,thin1,histadapt,thinstat]=process_thin(I,samplemask,1,1,options_thin,'r');
 %   figure, imshow(thinIden);
-%   % or refer to ImAnalysis.m
+%   % or refer to Ex1_ImAnalysis.m
 
 % Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defaultoptions = struct('Lwin',500 , 'Swin', 30, 'sthin',0);
@@ -111,9 +114,9 @@ end
     thinstat.thinori=mean_orient_thin;
     
     if showfig==1
-        msgfig = msgbox('Actin Channel Processed','Completed','modal');
-        uiwait(msgfig)
-        disp('Continue Image processing.');
-        close all
+%         msgfig = msgbox('Actin Channel Processed','Completed','modal');
+%         uiwait(msgfig)
+%         disp('Continue Image processing.');
+%         close all
     end
 end

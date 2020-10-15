@@ -11,24 +11,24 @@ function [Avgwid,Stdwid,Maxwid]=MeasWidthAll(beamI,BWI,res,maskI,dilsize,showfig
 
 %     BWI:          The 2D logical/binary image with beams to be measured
 
-%     res:          resolution of the image, um/pixel
+%     res:          resolution of the image, um/pixel or any unit /pixel
 
-%     maskI:        Optional, If there's the image is further seperated
+%     maskI:        If there's the image is further seperated
 %                   into different regions, a binary mask image could be
 %                   supplied to measure average width in the region only.
 %                   Mask is applied after skeletonization and beam
 %                   measurement to avoid error in area that are cutt of for
-%                   width measurement
+%                   width measurement; otherwise maskI=BWI or maskI=ones(size(BWI))
 %
-%     dilsize:      Optional, for visualization only, approximately 2 x
-%                   the average beam width( in pixels)
+%     dilsize:      Optional, for visualization only, approximate
+%                   average beam width(in pixels)
 %
 %     showfig:      Optional, indicator, 1= show figures when running the 
 %                   program, 0= don't show the figures
 % outputs,
 %   Avgwid:         Average beam width in the masked area
 %   Stdwid:         Standard deviation of beam width in the masked area
-%   Maxwid
+%   Maxwid:         Maximum beam width
 %
 % example, 
 %   I=imread('samplegreen.tif'); % can be greyscale image
@@ -36,14 +36,17 @@ function [Avgwid,Stdwid,Maxwid]=MeasWidthAll(beamI,BWI,res,maskI,dilsize,showfig
 %   SkelI = bwmorph(BWI,'thin',Inf); % Skeletonize the beams
 %   load('samplemask.mat');  % import  ROI mask
 %   [Avgwid,Stdwid,Maxwid]=MeasWidthAll(SkelI,BWI,1,samplemask,8,1);
-%   or refer to runAnalysis.m
+%   or
+%   
+%   can be used after [~,SkelI,~]=MergeNodes(SkelI,BWI,bini) and after more
+%   imag preprocessing, refer to process_thick.m
 
 
-%  Function is written by YikTungTracy Ling, 
-%  Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
-
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin < 2
     error('not enough input variables')
 elseif nargin == 2
@@ -70,12 +73,14 @@ end
     if showfig==1
         distdil=imdilate(distskel,strel('disk',dilsize*2));
         dilatedbin=distdil.*BWI.*maskI;
+        dilatedbin(BWI==0)=NaN;
         figure
         imagesc(dilatedbin)
         colormap jet
         colorbar
-        caxis([0 max(distskel,[],'all')])
+        % caxis([0 max(distskel,[],'all')])
     end
+    
     % imagesc(fliplr(flipud(dilatedbin)))
     % hold on
     % plot(cenx,ceny,'r-','LineWidth',2)
@@ -83,7 +88,7 @@ end
 
     %calculate average beam width in each zone
     width_mask=distskel.*maskI;
-    width_mask(width_mask==0)=nan;
+    width_mask(BWI==0)=nan;
     Avgwid=nanmean(width_mask,'all'); 
     Stdwid=nanstd(width_mask,0,'all'); 
     Maxwid=max(width_mask,[],'all');

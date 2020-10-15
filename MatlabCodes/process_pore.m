@@ -38,12 +38,13 @@ function [pstat]=process_pore(maskI,beamI,removeI,showfig,options)
 %   load('samplemask.mat');  % import  ROI mask
 %   options = struct('outlim', 0, 'spore',0);
 %   [pstat]=process_pore(samplemask,beamI,removeI,1,options);
-%   or refer to ImAnalysis.m
+%   or refer to Ex1_ImAnalysis.m for more image preprocessing
 
 
-%  Function is written by YikTungTracy Ling, 
-%  Johns Hopkins University (July 2019)
-%  Reference: 
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defaultoptions = struct('outlim', 0, 'spore',0);
@@ -107,10 +108,10 @@ end
         himage.AlphaData = 0.5;
         hold off
         clear Lrgb
-        msgfig = msgbox('process pores','Step4','modal');
-        uiwait(msgfig)
-        disp('finalizing');
-        close all
+%         msgfig = msgbox('process pores','Step4','modal');
+%         uiwait(msgfig)
+%         disp('finalizing');
+%         close all
     end
 
     % actinden = imresize(actinden,[savesize savesize]);

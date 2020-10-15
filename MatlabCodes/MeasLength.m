@@ -1,4 +1,4 @@
-function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasLength(SkelI,bini,showfig)
+function [totbeamlen,beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasLength(SkelI,BWI,bini,res,showfig)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     This function MeasLength measures contour length, straigh line
@@ -8,11 +8,15 @@ function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasL
 % inputs,
 %     skelI:        The 2D skeleton image from the network, where pixels in
 %                   region of interest = 1 and pixels in the backgroun =0
-%     bini:         Optional, indicator, 1= show figures when running the 
-%                   program, 0= don't show the figures
+%     BWI:          The 2D logical/binary image with beams to be measured
+%     bini:         for visualization only, approximate
+%                   average beam width(in pixels)
+%     res:          resolution (um/pixel or any units/pixel); res=1 if just
+%                   want to output pixels
 %     showfig:      indicator, 1= show figures when running the 
 %                   program, 0= don't show the figures  
 % outputs,
+%     totbeamlen:   total 
 %     beamlen:      average contour length of all beams (pixels)
 %     bstraightlen: average straight line distance of all beams (pixels)
 %     tort:         average toruosity/waviness of all beams
@@ -21,24 +25,22 @@ function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasL
 %     BWI=imbinrize(I,graythresh(I)); % binarize the image with beams
 %     load('samplemask.mat');
 %     SkelI = bwmorph(lastBW.samplemask,'thin',Inf); % Skeletonize the beams
-%     [beamNodeI,beamI]=MergeNodes(SkelI,8);
+%     [beamNodeI,beamI]=MergeNodes(SkelI,BWI,8,1,1);
 %     MeasLength(skelI,8,showfig)  
-%     or refer to runAnalysis.m
+%     or refer to Ex1_ImAnalysis.m
 
-
-%  Function is written by YikTungTracy Ling, 
-%  Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Referece: Ling, Y.T.T., Shi, R., Midgett, D.E., Jefferys, J.L., Quigley, H.A. and Nguyen, T.D., 
+% 2019. Characterizing the collagen network structure and pressure-induced strains of the human 
+% lamina cribrosa. Investigative ophthalmology & visual science, 60(7), pp.2406-2422.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    [~,beamI]=MergeNodes(SkelI,bini);
-    branch_lb=bwlabel(beamI);
+    [~,beamI,branch_lb]=MergeNodes(SkelI,bini);
     branch_lb1=branch_lb;
     no_branch=max(max(branch_lb)); % number of identified branches
     %pre-allocate output variables
     branch_distance=NaN(no_branch,1);
-    blstats = regionprops(beamI,'Perimeter','Orientation');
+    blstats = regionprops(branch_lb,'Perimeter');
        % record pixel distance
        for l=1:no_branch
            [posy,posx]=find(branch_lb==l);
@@ -53,14 +55,21 @@ function [beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort_std]=MeasL
        end
        
        if showfig==1
-           figure
-           imagesc(branch_lb1)
-           colormap jet
-           colorbar
-           caxis([0 max(distskel,[],'all')])
+            branch_lb1=imdilate(branch_lb1.*res,strel('disk',bini*2));
+            dilatedbin=branch_lb1.*BWI;
+            dilatedbin(BWI==0)=NaN;
+            figure
+            imagesc(dilatedbin)
+            colormap jet
+            colorbar
+            
+            figure
+            histogram(branch_distance.*res)
        end
        
        branch_pixel=[blstats.Perimeter]/2;
+       % total beam length
+       totbeamlen=sum(branch_pixel,'all');
        % calculate tortuosity/waviness of each beam
        branch_turtuosity=branch_pixel./branch_dist;
        %record mean and std

@@ -1,5 +1,5 @@
 function [maskcen,maskperi,maskperi90,maskrim]=seperate_CPR_zones(mask1,showfig)
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  This function seperate_CPR_zones seperates a masked region in an image
 %  into central, peripheral and rim zones (0-50%, 50-90% and 90-100%
 %  of the distance from centroid of the region to the outer boundary).
@@ -27,8 +27,11 @@ function [maskcen,maskperi,maskperi90,maskrim]=seperate_CPR_zones(mask1,showfig)
 %   or refer to AutoBoundary.m
 %
 % Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 
 if nargin < 2
   showfig = 1;

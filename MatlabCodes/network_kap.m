@@ -5,7 +5,8 @@ function [kfit,mean_orient]=network_kap(BW,lowth,highth,showfig)
 %  fitting a the semicircular von Mises probability
 %  density function to the histogram of orientation angles centered 
 %  about the circular average orientation. Images should be larger than
-%  100x 100 pixels
+%  100x 100 pixels. This function utilizes fourier transform to obtain
+%  orientation histogram, different from fitvonmises_cdf.m
 % 
 % [kfit,mean_orient]=network_kap(BW,lowth,highth,showfig);
 % 
@@ -50,10 +51,12 @@ function [kfit,mean_orient]=network_kap(BW,lowth,highth,showfig)
 % BW=data;
 % [kfit,mean_orient]=network_kap(BW);
 
-%  Function is written by YikTungTracy Ling, 
-%  Johns Hopkins University (July 2019)
-%  Reference: 
-    % Band pass filter to eliminate high (noise) and low (large backgrounds) frequency components;
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+ 
+% Band pass filter to eliminate high (noise) and low (large backgrounds) frequency components;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% parse input
     if nargin < 2
@@ -114,18 +117,20 @@ function [kfit,mean_orient]=network_kap(BW,lowth,highth,showfig)
     for j = dRange
         PS_deg(j+1) = mean(PS(degrees == j & R > lowth & R < highth)); 
     end
-        PS_deg(PS_deg==NaN)=0;
+
+
+    % in our definition, 1 degree=181 degree, combine intensity in the same
+    % degree
+    PS_deg180=PS_deg(1:180)+PS_deg(181:360);
+    PS_deg(PS_deg==NaN)=0;
     if showfig==1
         % show 'histogram' of intensity in each degree
         figure
         polarplot(deg2rad(dRange),PS_deg)
         title('360 view')
     end
-
-    % in our definition, 1 degree=181 degree, combine intensity in the same
-    % degree
-    PS_deg180=PS_deg(1:180)+PS_deg(181:360);
     clear PS_deg
+    
     dRange = [0:179];
     dRange(dRange>90)=(dRange(dRange>90)-180);
 

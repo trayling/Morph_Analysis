@@ -1,4 +1,4 @@
-function [beamNodeI,beamI]=MergeNodes(SkelI,bini)
+function [beamNodeI,beamI,beamlabel]=MergeNodes(SkelI,bini)
 %     This function MergeNodes merges nodes that are too close to each other 
 %     after skelotonization procedure. 
 %     i.e. distance between centroids of two nodes should be larger than 
@@ -9,8 +9,7 @@ function [beamNodeI,beamI]=MergeNodes(SkelI,bini)
 %     skelI:        The 2D skeleton image from the network, where pixels in
 %                   region of interest = 1 and pixels in the backgroun =0
 % 
-%     bini:         Optional, indicator, 1= show figures when running the 
-%                   program, 0= don't show the figures
+%     bini:         approximate average beam width(in pixels)
 % outputs,
 %     beamNodeI:    2D binary image of beam skeleton plus dilated node map
 % 
@@ -22,16 +21,16 @@ function [beamNodeI,beamI]=MergeNodes(SkelI,bini)
 %     I=imread('samplegreen.tif'); % greyscale image
 %     BWI=imbinrize(I,graythresh(I)); % binarize the image with beams
 %     load('samplemask.mat');
-%     SkelI = bwmorph(lastBW.samplemask,'thin',Inf); % Skeletonize the beams
-%     [beamNodeI,beamI]=MergeNodes(SkelI,8);
+%     SkelI = bwmorph(lastBW.*samplemask,'thin',Inf); % Skeletonize the beams
+%     [beamNodeI,beamI,beamlabel]=MergeNodes(SkelI,8);
 %     or refer to runAnalysis.m
 
 
-%  Function is written by YikTungTracy Ling, 
-%  Johns Hopkins University (July 2019)
-% Reference: Ling et al. 'Pressure-Induced Changes in Astrocyte GFAP, Actin
-% and Nuclear Morphology in Mouse Optic Nerve' IOVS 2020
-
+% Function is written by YikTungTracy Ling, Johns Hopkins University (July 2019)
+% Reference: Ling, Y. T. T., Pease, M. E., Jefferys, J. L., Kimball, E. C., Quigley, H. A., 
+% & Nguyen, T. D. (2020). Pressure-Induced Changes in Astrocyte GFAP, Actin, and Nuclear 
+% Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
+ 
 %% start function
     nodes = bwmorph(SkelI,'branchpoints');
     no_nodes=sum(sum(nodes));
@@ -54,5 +53,6 @@ function [beamNodeI,beamI]=MergeNodes(SkelI,bini)
 
     % beam skeleton after removing dilated nodes
     beamI=SkelI.*(~node_dil);
+    beamlabel=bwlabel(beamI);
 
 end
