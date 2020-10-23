@@ -68,43 +68,38 @@ end
     % find corresponding labeled region in actin
     % set region to not pore
     pore= imcomplement(beamI).*(maskI);
-    %  figure
-    %  imshow(actinpore(3198:3930,2356:3090))
-    % clear  GFAPmask1 
-    % imshow(actinpore)
+    %%%%%%%%%%%%%%%%%%%% remove pores that are touching the boundary %%%%%%%%%%%%%%%%%%%%%%%%
+    [pore]=removeBoundPore(pore,maskI,showfig);
+    %%%%%%%%%%%%%%%%%%%%% removes pores that belongs to nucleus %%%%%%%%%%%%%%%%%%%%%%%%%
     poreL = bwlabel(pore);
     % find nucleus label that overlapped with actin pores
     findNuc=(removeI).*poreL;
-    % find nucleus label that overlapped with actin pores
-    maskoutline1=bwmorph(maskI,'remove');
-    maskoutline1 = imdilate(maskoutline1, strel('disk',2));
-    findNuc1=maskoutline1.*poreL;
-    %end
-    Nuclist=unique([findNuc,findNuc1]);
-    Nuclist=Nuclist(2:end);
+    Nuclist=unique([findNuc]);
+    Nuclist=Nuclist(2:end); % the first element is 0 no a pore label
     retain = (~ismember(poreL, Nuclist)).*poreL;
     % Convert to binary
     pore=retain>0;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %remove pores less than x number of pixels
     pore=bwareaopen(pore,options.spore);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %remove pores with aspect ratio larger than x
     porestats=regionprops(pore,'Area','MajorAxisLength','MinorAxisLength');
-    %actinporecount=numel(porestats);
-    %allAreas = [porestats.Area];
     poreAR=[porestats.MajorAxisLength]./[porestats.MinorAxisLength];
     outlim=options.outlim;
     stay=find(poreAR>outlim);
     retain1 = ismember(retain,stay);
     retain1=bwareaopen(retain1,options.spore);
     retain1=bwlabel(retain1);
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     clear porestats retain DapiB4open poreAR actinporeL
     if showfig==1
-        sx=size(maskI,1);
         Lrgb = label2rgb(retain1, 'jet', 'w', 'shuffle');
         figure
-        im1=imshow(beamI(sx/3:sx/3+800,sx/3:sx/3+800));
+        im1=imshow(beamI);
         im1.AlphaData = 0.5;
         hold on
-        himage = imshow(Lrgb(sx/3:sx/3+800,sx/3:sx/3+800,:));
+        himage = imshow(Lrgb);
         himage.AlphaData = 0.5;
         hold off
         clear Lrgb

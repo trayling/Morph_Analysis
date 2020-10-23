@@ -68,16 +68,8 @@ else
 end
 
 
-    %%%%%%%%%%%%%%%%%%% median filter %%%%%%%%%%%%%%%%%%%%%%%%%%
-    medfiltthin=medfilt2(thinI);
-    %%%%%%%%%%%%%%% contrast enhancement %%%%%%%%%%%%%%%%%%%%%
-    hisadapt=adapthisteq(medfiltthin,'NumTiles' ,[options.Lwin options.Lwin]);
-    hisadapt=adapthisteq(hisadapt,'NumTiles' ,[options.Swin options.Swin]);
-    showsingle(hisadapt,color,showfig);
-    %%%%%%%%%%%%%%%%%% otsu binarization %%%%%%%%%%%%%%%%%%%%
-    thres=graythresh(hisadapt);
-    binthin= imbinarize(hisadapt,thres); 
-    binthin=maskI.*binthin;
+    [hisadapt,binthin]=PreProcess_Binarize(thinI,options.Lwin,options.Swin,color,showfig);
+    
     %%%%%%%%%%% morphological smoothing %%%%%%%%%%%%%%%%%%%%
     thin1=bwmorph(binthin,'bridge');
     thin1 = bwmorph(thin1,'clean');

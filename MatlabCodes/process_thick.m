@@ -1,7 +1,10 @@
 function [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(thickI,showfig,res,options,color)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  This function process_thick processes images with fine network. It
-%  binarizes grey scale images, smooths them and calculates network properties
+%  This function process_thick processes images with thick beam network. It
+%  binarizes grey scale images, smooths them and calculates network
+%  properties. Process_thick also separates the area of interest into
+%  central, peipheral and rim regions, refer to process_thin for an example
+%  without separating regions
 % 
 % [thickImask1,thickIden,outline,thickstat]=process_thick(thickI,showfig,res,options,color)
 % inputs,
@@ -12,7 +15,7 @@ function [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(thic
 %   showfig:    indicator, 1= show figures when running the program, 0=
 %               don't show the figures 
 % inputs,
-%   thinI :         The original greyscale image with thin network
+%   thickI :        The original greyscale image with thick network
 %   maskI :         The 2D logical/binary image indicating area of interest, 
 %                   where pixels in region of interest = 1 and pixels in 
 %                   the background =0
@@ -39,7 +42,7 @@ function [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(thic
 %                   median filtered image
 %    thickIden:     Final 2D Binarized image after smoothing  
 %                   for calculation of thin network properties
-%    histthickI:       Final 2D greyscale image just before
+%    histthickI:    Final 2D greyscale image just before
 %                   binarization, used for visualization
 %    thickstat:     struct with measured properties 
 %     .mask_area                         % total area of ROI (pixels^2)
@@ -95,22 +98,8 @@ function [thickImask1,thickIden,histthickI,outline,thickstat]=process_thick(thic
             error('process_thick: unknownoption','unknown options found');
         end
     end
-
-
-    %%%%%%%%%%%%%%%%%%% median filter %%%%%%%%%%%%%%%%%%%%%%%%%%
-    medfiltthickI=medfilt2(thickI);
-    showsingle(medfiltthickI,color,showfig);
-    %title('after median filter')
-    %%%%%%%%%%%%%%% contrast enhancement %%%%%%%%%%%%%%%%%%%%%
-    % overall contrast enhancement for lamina
-    histthickI=adapthisteq(medfiltthickI,'NumTiles' ,[options.Lwin options.Lwin]);
-    % local contrast enhancement
-    histthickI=adapthisteq(histthickI,'NumTiles' ,[options.Swin options.Swin]);
-    showsingle(histthickI,color,showfig);
-    %title('after CLAHE')
-    %%%%%%%%%%%%%%%%%% otsu binarization %%%%%%%%%%%%%%%%%%%%
-    threshthickI=graythresh(histthickI);
-    B1= imbinarize(histthickI,threshthickI);
+    % %%%%%%%%%%%%%%%%% preprocessing and binarization %%%%%%%%%%%%%%%%%
+    [histthickI,B1]=PreProcess_Binarize(thickI,options.Lwin,options.Swin,color,showfig);
     
     %%%%%%%%%%%%%%%%% auto detect boundary & %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%% seperate central pheroheral and rim zone %%%%%%%%%%%%%%%%%%%%
