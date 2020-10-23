@@ -45,9 +45,6 @@ function [totbeamlen,beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort
        for l=1:no_branch
            [posy,posx]=find(branch_lb==l);
            len=size(posx,1);
-
-           pos=sub2ind(size(beamI),posy,posx);
-
            % calculate straight line distance
            branch_dist=pdist2([posy(1),posx(1)],[posy(len),posx(len)]);
            branch_distance(l)=branch_dist;
@@ -71,13 +68,13 @@ function [totbeamlen,beamlen,beamlen_std,bstraightlen,bstraightlen_std,tort,tort
        % total beam length
        totbeamlen=sum(branch_pixel,'all');
        % calculate tortuosity/waviness of each beam
-       branch_turtuosity=branch_pixel./branch_dist;
+       branch_turtuosity=branch_pixel./branch_distance';
        %record mean and std
-       beamlen=mean(branch_pixel);
-       beamlen_std=std(branch_pixel);
-       bstraightlen=mean(branch_distance);
-       bstraightlen_std=std(branch_distance);
-       tort=mean(branch_turtuosity);
-       tort_std=std(branch_turtuosity);
+       beamlen=nanmean(branch_pixel);
+       beamlen_std=nanstd(branch_pixel);
+       bstraightlen=nanmean(branch_distance);
+       bstraightlen_std=nanstd(branch_distance);
+       tort=nanmean(branch_turtuosity);
+       tort_std=nanstd(branch_turtuosity);
 end
        
