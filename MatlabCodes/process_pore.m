@@ -19,7 +19,7 @@ function [pstat]=process_pore(maskI,beamI,removeI,showfig,options)
 %                   nulcear that needs to be removed
 %     res:          resolution of the image, um/pixel
 %     options:      structure: 
-%           .outlim: eliminate pores with aspect ratio > x                           
+%           .outlim: eliminate pores with aspect ratio > outlim                           
 %           .spore:  area smaller than this number of pixels are removed/
 %                    not counted as pores
 %     showfig:      Optional, indicator, 1= show figures when running the 
@@ -47,7 +47,7 @@ function [pstat]=process_pore(maskI,beamI,removeI,showfig,options)
 % Morphology in Mouse Optic Nerve. Investigative Ophthalmology & Visual Science, 61(11), 14-14.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-defaultoptions = struct('outlim', 0, 'spore',0);
+defaultoptions = struct('outlim', 100, 'spore',0);
 
 % Process inputs
 if (~exist('options','var')) 
@@ -87,7 +87,7 @@ end
     porestats=regionprops(pore,'Area','MajorAxisLength','MinorAxisLength');
     poreAR=[porestats.MajorAxisLength]./[porestats.MinorAxisLength];
     outlim=options.outlim;
-    stay=find(poreAR>outlim);
+    stay=find(poreAR<outlim);
     retain1 = ismember(retain,stay);
     retain1=bwareaopen(retain1,options.spore);
     retain1=bwlabel(retain1);

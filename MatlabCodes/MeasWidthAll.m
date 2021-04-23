@@ -73,7 +73,7 @@ end
     if showfig==1
         distdil=imdilate(distskel,strel('disk',dilsize*2));
         dilatedbin=distdil.*BWI.*maskI;
-        dilatedbin(BWI==0)=NaN;
+        dilatedbin(dilatedbin==0)=NaN;
         figure
         imagesc(dilatedbin)
         colormap jet
@@ -88,7 +88,7 @@ end
 
     %calculate average beam width in each zone
     width_mask=distskel.*maskI;
-    width_mask(BWI==0)=nan;
+    width_mask(width_mask==0)=nan;
     Avgwid=nanmean(width_mask,'all'); 
     Stdwid=nanstd(width_mask,0,'all'); 
     Maxwid=max(width_mask,[],'all');

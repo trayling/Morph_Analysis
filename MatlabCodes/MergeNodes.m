@@ -16,7 +16,8 @@ function [beamNodeI,beamI,beamlabel]=MergeNodes(SkelI,bini)
 %     beamI:        2D binary image of beam skeleton after removing dilated
 %                   nodes, suitatble for measuring beam width, length,
 %                   tortuosity etc.
-%
+%     connectivity(optional): umber of beams connecting to each beam
+%     junction/node
 % example, 
 %     I=imread('samplegreen.tif'); % greyscale image
 %     BWI=imbinrize(I,graythresh(I)); % binarize the image with beams
@@ -33,7 +34,6 @@ function [beamNodeI,beamI,beamlabel]=MergeNodes(SkelI,bini)
  
 %% start function
     nodes = bwmorph(SkelI,'branchpoints');
-    no_nodes=sum(sum(nodes));
     nse = strel('disk',round(bini/2)); 
     node_dil = imdilate(nodes,nse);
    
@@ -54,5 +54,7 @@ function [beamNodeI,beamI,beamlabel]=MergeNodes(SkelI,bini)
     % beam skeleton after removing dilated nodes
     beamI=SkelI.*(~node_dil);
     beamlabel=bwlabel(beamI);
-
+    no_nodes=max(max(bwlabel(node_dil)));
+    [connectivity]=connectiv(node_dil,no_nodes,beamI,beamlabel);
+    
 end

@@ -49,7 +49,7 @@ colornuc='b';       % blue channel
 options_thick=struct('Lwin',Lwin , 'Swin', Swin, 'threshpix', threshpix, 'sthick', sthick, 'skelthr', skelthr, 'bini',bini);
 options_thin = struct('Lwin',Lwin , 'Swin', Swin, 'sthin',sthin);
 options_nuc = struct('Lwin',Lwin , 'snuc',0,'threshpix',threshpix);
-options_pore=struct('outlim', 0, 'spore',spore);
+options_pore=struct('outlim', 100, 'spore',spore);
 
 %% run Image Analysis
 combinedata=Ex1_ImAnalysis(options_thick,options_thin,options_nuc,options_pore,colorthick,colorthin,colornuc,res,savesize,showfig);
