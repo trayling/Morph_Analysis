@@ -38,13 +38,11 @@ end
             dots=getfield(stats,{k},'PixelList'); % list in [x y] format
             dots_p=size(dots,1); % number of pixels for this dilated node
             for dd=1:dots_p % for each pixel, find surrouding 8 squares for connecting node
-                for searchy=(dots(dd,2)-1):(dots(dd,2)+1) 
-                    for searchx=(dots(dd,1)-1):(dots(dd,1)+1) 
-                            if searchy~=0 & searchy<=size(beamlabel,1) & searchx~=0 & searchx<=size(beamlabel,2)
-                                if beamI(searchy,searchx)~=0
-                                    nodetobranch=[nodetobranch,beamlabel(searchy,searchx)]; % then record branch number
-                                end
-                            end
+                for searchy=(dots(dd,2)-1):(dots(dd,2)+1) & searchy~=0 & searchy~=0 
+                    for searchx=(dots(dd,1)-1):(dots(dd,1)+1) & searchx~=0
+                        if beamI(searchy,searchx)~=0
+                            nodetobranch=[nodetobranch,beamlabel(searchy,searchx)]; % then record branch number
+                        end
                     end
                 end   
             end
